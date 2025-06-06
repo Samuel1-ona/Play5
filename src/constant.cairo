@@ -1,4 +1,4 @@
-use starknet::{get_tx_info, ContractAddress}
+use starknet::{get_tx_info, ContractAddress};
 
 #[derive(Copy , Drop, Hash)]
 pub struct StarknetDomain{
@@ -9,7 +9,7 @@ pub struct StarknetDomain{
 
 
 #[derive(Copy , Drop, Hash)]
-pub PlayerCommonSkillsParam {
+pub struct PlayerCommonSkillsParam {
     pub player: ContractAddress,
     pub salt_nonce: u64,
     pub is_new_match: bool,
@@ -18,7 +18,7 @@ pub PlayerCommonSkillsParam {
 
 
 #[derive(Copy , Drop, Hash)]
-pub PlayerCommonFoulsParam {
+pub struct PlayerCommonFoulsParam {
     pub player: ContractAddress,
     pub salt_nouce: u64,
     pub is_new_match: bool,
