@@ -97,12 +97,18 @@ pub struct Match {
 }
 
 
-#[derive(Copy, Drop, Serde, Debug)]
+#[derive(Copy, Drop, Serde, PartialEq, Debug)]
 #[dojo::model]
 pub struct SelectedSkill {
     #[key]
     pub player_id: u32,
     pub skills: felt252,
+}
+
+#[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
+pub enum SkilsOrFouls {
+    FootballSkills,
+    FootballFouls
 }
 
 #[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
