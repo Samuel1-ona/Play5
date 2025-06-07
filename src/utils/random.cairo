@@ -1,8 +1,8 @@
 use cartridge_vrf::{IVrfProviderDispatcher, IVrfProviderDispatcherTrait, Source};
-use starknet::{ContractAddress, contract_address_const, get_caller_address, get_block_number, };
+use starknet::{ContractAddress, contract_address_const, get_caller_address, get_block_number};
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::pedersen::PedersenTrait;
-use play5::models::football::{SelectedSkill, SkilsOrFouls};
+use play5::models::football::{SelectedSkill, SkilsOrFouls, CommonSkills, CommonFouls, FoulsActions};
 
 
 fn get_vrf_address() -> ContractAddress {
@@ -14,9 +14,9 @@ pub fn get_random_hash() -> felt252 {
     vrf_provider.consume_random(Source::Nonce(get_caller_address()))
 }
 
-// This function get the random index of all the  football skills 
+// This function get the random index of all the  football skills
 
- pub fn get_random_index_football_skills(random_index: felt252, seed: u16, max_index: u16) -> u16 {
+pub fn get_random_index_football_skills(random_index: felt252, seed: u16, max_index: u16) -> u16 {
     let block_number = get_block_number();
     let mut state = PedersenTrait::new(0);
     state = state.update_with(random_index);
@@ -35,7 +35,7 @@ pub fn get_random_hash() -> felt252 {
     index_u16
 }
 
- // This function get the random index of all the  football fouls
+// This function get the random index of all the  football fouls
 pub fn get_random_index_football_fouls(random_index: felt252, seed: u16, max_index: u16) -> u16 {
     let block_number = get_block_number();
     let mut state = PedersenTrait::new(0);
@@ -57,10 +57,8 @@ pub fn get_random_index_football_fouls(random_index: felt252, seed: u16, max_ind
 
 
 pub fn get_random_football_skills_from_selected_skills(
-    selected_skills: Span<SelectedSkill>,
-    random_index: felt252,
+    selected_skills: Span<SelectedSkill>, random_index: felt252,
 ) -> SelectedSkill {
-
     let mut can_recieve_skills = ArrayTrait::new();
     let mut i: u32 = 0;
     while i < selected_skills.len() {
@@ -78,7 +76,6 @@ pub fn get_random_football_skills_from_selected_skills(
             can_recieve_skills.append(skill);
         }
         i += 1;
-
     };
 
     assert!(can_recieve_skills.len() > 0, "No skills available to receive");
@@ -91,10 +88,32 @@ pub fn get_random_football_skills_from_selected_skills(
     let hash: u256 = state.finalize().into();
     let index = (hash % can_recieve_skills.len().into());
     return *can_recieve_skills.at(index.try_into().unwrap());
+}
 
+
+pub fn map_random_fouls_from_action(action: FoulsActions) -> CommonFouls{
+    match action {
+        FoulsActions::Heavy_tackles => CommonFouls::Foul_Tackle,
+        FoulsActions::Sliding_Tackle_From_Behind => CommonFouls::Tripping,
+        FoulsActions::Obstruction => CommonFouls::Foul_Tackle,
+        FoulsActions::Late_Challenge => CommonFouls::Foul_Tackle,
+        _ => panic!("Invalid action for fouls"),
+    }
 }
 
 
 
-
-
+pub fn check_skills_is_selected(
+    selected_skills: Span<SelectedSkill>, skill: felt252, player_id: u32,
+) -> bool {
+    let mut found: bool = false;
+    let mut i: u32 = 0;
+    while i < selected_skills.len() {
+        let selected_skill = *selected_skills.at(i);
+        if selected_skill.player_id == player_id && selected_skill.skills == skill {
+            found = true;
+        }
+        i += 1;
+    };
+    found
+}

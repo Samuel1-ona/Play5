@@ -5,12 +5,11 @@ use starknet::{ContractAddress};
 pub struct Players {
     #[key]
     pub player_id: u32,
-      #[key]
+    #[key]
     pub player: ContractAddress,
     pub player_skills: Span<SelectedSkill>,
     pub team_id: u32,
     pub tx_hash: felt252,
-  
 }
 
 
@@ -21,7 +20,7 @@ pub struct PlayerSkill {
     pub player_id: u32,
     #[key]
     pub skills: CommonSkills,
-    pub level: u8,  // Optional: 1–100 or 1–10 scale
+    pub level: u8, // Optional: 1–100 or 1–10 scale
     pub tx_hash: felt252,
 }
 
@@ -63,22 +62,22 @@ pub struct Velocity {
 #[derive(Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Team {
-     #[key]
+    #[key]
     pub team_id: u32,
     pub match_id: u32,
     pub score: u32,
     pub tx_hash: felt252,
 }
 
-#[derive(Drop,Serde,Debug)]
+#[derive(Drop, Serde, Debug)]
 #[dojo::model]
-pub struct Goal{
+pub struct Goal {
     #[key]
-    pub goal_id: u32,            // Unique ID for goal
+    pub goal_id: u32, // Unique ID for goal
     pub match_id: u32,
-    pub team_id: u32,            // The team that scored
-    pub player_id: u32,          // Player who scored
-    pub timestamp: u32,          // When goal happened in seconds
+    pub team_id: u32, // The team that scored
+    pub player_id: u32, // Player who scored
+    pub timestamp: u32, // When goal happened in seconds
     pub tx_hash: felt252,
 }
 
@@ -87,8 +86,8 @@ pub struct Goal{
 pub struct Match {
     #[key]
     pub match_id: u32,
-    pub status: u8,         // 0 = Not Started, 1 = In Progress, 2 = Ended
-    pub time: u32,          // Match time in seconds
+    pub status: u8, // 0 = Not Started, 1 = In Progress, 2 = Ended
+    pub time: u32, // Match time in seconds
     pub score_team1: u32,
     pub score_team2: u32,
     pub team1_id: u32,
@@ -108,7 +107,7 @@ pub struct SelectedSkill {
 #[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
 pub enum SkilsOrFouls {
     FootballSkills,
-    FootballFouls
+    FootballFouls,
 }
 
 #[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
@@ -124,15 +123,21 @@ pub enum CommonSkills {
     ThroughBall,
     Throwin,
     Freekicks,
+    PenaltyKick,
 }
 
 #[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
 pub enum CommonFouls {
-    Handball,
     Foul_Tackle,
-    Holding,
-    Pushing,
     Tripping,
+}
+
+#[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
+pub enum FoulsActions{
+    Heavy_tackles,
+    Sliding_Tackle_From_Behind,
+    Obstruction,
+    Late_Challenge,
 }
 
 
@@ -150,9 +155,8 @@ impl CommonSkillsImpl of Into<CommonSkills, felt252> {
             CommonSkills::ThroughBall => 'ThroughBall',
             CommonSkills::Throwin => 'Throwin',
             CommonSkills::Freekicks => 'Freekicks',
+            CommonSkills::PenaltyKick => 'PenaltyKick',
         }
-
-
     }
 }
 
@@ -160,13 +164,22 @@ impl CommonSkillsImpl of Into<CommonSkills, felt252> {
 impl CommonFoulsImpl of Into<CommonFouls, felt252> {
     fn into(self: CommonFouls) -> felt252 {
         match self {
-            CommonFouls::Handball => 'Handball',
+           
             CommonFouls::Foul_Tackle => 'Foul_Tackle',
-            CommonFouls::Holding => 'Holding',
-            CommonFouls::Pushing => 'Pushing',
             CommonFouls::Tripping => 'Tripping',
         }
     }
 }
 
+
+impl FoulsActionsImpl of Into<FoulsActions, felt252> {
+    fn into(self: FoulsActions) -> felt252 {
+        match self {
+            FoulsActions::Heavy_tackles => 'Heavy_tackles',
+            FoulsActions::Sliding_Tackle_From_Behind => 'Sliding_Tackle_From_Behind',
+            FoulsActions::Obstruction => 'Obstruction',
+            FoulsActions::Late_Challenge => 'Late_Challenge',
+        }
+    }
+}
 
