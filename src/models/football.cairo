@@ -103,7 +103,6 @@ pub struct SelectedSkill {
     #[key]
     pub player_id: u32,
     pub skills: felt252,
-    pub tx_hash: felt252,
 }
 
 #[derive(Drop, Copy, Serde, PartialEq, Introspect, Debug)]
