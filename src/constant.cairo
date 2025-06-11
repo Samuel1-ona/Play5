@@ -25,6 +25,8 @@ pub struct PlayerCommonFoulsParam {
     pub is_fouls: bool,
 }
 
+
+
 pub const MAX_INDEX_OF_COMMON_SKILLS: u16 = 10;
 
 pub const MAX_INDEX_OF_COMMON_FOULS: u16 = 5;

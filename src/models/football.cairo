@@ -1,13 +1,13 @@
 use starknet::{ContractAddress};
 
-#[derive(Copy, Drop, Serde, Debug)]
+#[derive(Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Players {
     #[key]
     pub player_id: u32,
     #[key]
     pub player: ContractAddress,
-    pub player_skills: Span<SelectedSkill>,
+    pub player_skills: Array<SelectedSkill>,
     pub team_id: u32,
     pub tx_hash: felt252,
 }
