@@ -10,7 +10,7 @@ pub struct UsedSignature {
 
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
-pub struct prover {
+pub struct Prover {
     #[key]
     pub system: ContractAddress,
     pub address: ContractAddress,

@@ -1,2 +1,2 @@
-pub mod IPlay5;
+pub mod IGamesystem;
 pub mod IAccountABI;
