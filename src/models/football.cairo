@@ -64,6 +64,9 @@ pub struct Velocity {
 pub struct Team {
     #[key]
     pub team_id: u32,
+    #[key]
+    pub player: ContractAddress,
+    pub players_id: u32,
     pub match_id: u32,
     pub score: u32,
     pub tx_hash: felt252,
@@ -87,7 +90,7 @@ pub struct Match {
     #[key]
     pub match_id: u32,
     pub status: u8, // 0 = Not Started, 1 = In Progress, 2 = Ended
-    pub time: u32, // Match time in seconds
+    pub time: u64, // Match time in seconds
     pub score_team1: u32,
     pub score_team2: u32,
     pub team1_id: u32,
