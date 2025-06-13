@@ -1,3 +1,24 @@
+use starknet::{ContractAddress};
+
+
+
+#[starknet::interface]
+pub trait IGamesystem<TState> {
+  fn initialize(ref self: TState, prover_address: ContractAddress, vrf_address: ContractAddress);
+    fn start_match(ref self: TState, match_id: felt252);
+}
+
+
+#[starknet::interface]
+pub trait IAccountABI<TState> {
+    fn is_valid_signature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
+
+    // ISRC6CamelOnly
+    fn isValidSignature(self: @TState, hash: felt252, signature: Array<felt252>) -> felt252;
+}
+
+
+
 #[dojo::contract]
 pub mod Gamesystem {
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
@@ -5,14 +26,11 @@ pub mod Gamesystem {
     use cartridge_vrf::{Source, IVrfProviderDispatcher, IVrfProviderDispatcherTrait};
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
-   use dojo::world::{IWorldDispatcherTrait,  IWorldDispatcher};
+    use dojo::world::{IWorldDispatcherTrait, IWorldDispatcher};
     use core::hash::{HashStateTrait, HashStateExTrait};
     use core::poseidon::PoseidonTrait;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
-    // Game imports
-    use play5::interface::{IAccountABI};
-    use play5::interface::IGamesystem::IGamesystem;
     use play5::models::football::{
         CommonSkills, CommonFouls, Players, PlayerSkill, FoulLog, Position, Velocity, SelectedSkill, Team, Goal, Match
     };
@@ -32,30 +50,41 @@ pub mod Gamesystem {
     };
     use play5::models::signature::{Prover, UsedSignature};
 
+    use super::{IGamesystem, IAccountABI};
+
     #[storage]
     pub struct Storage {
         vrf_address: ContractAddress,
     }
 
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        fn world_default(self: @ContractState) -> dojo::world::WorldStorage {
+            self.world(@"play5s")
+        }
 
-       impl WorldStorageTrait of Storage {} 
+    }
 
     #[abi(embed_v0)]
     impl GamesystemImpl of IGamesystem<ContractState> {
-        fn initializer(ref self: ContractState, Prover_address: ContractAddress, vrf_address: ContractAddress) {
-            let mut world = self.world(@"Gamesystem");
+      fn initialize(
+        ref self: ContractState, prover_address: ContractAddress, vrf_address: ContractAddress
+    ) {
+      let mut world = InternalImpl::world_default(@self);
 
-            self.vrf_address.write(vrf_address);
+        self.vrf_address.write(vrf_address);
+        let caller = get_caller_address();
+        let mut prover: Prover = world.read_model(get_contract_address());
+        assert(prover.address.is_zero(), 'prover already initialized');
+        prover.address = prover_address;
+        world.write_model(@prover);
+    }
+
+
+      
+        fn start_match(ref self: ContractState, match_id: felt252) {
+            let mut world = InternalImpl::world_default(@self);
             let caller = get_caller_address();
-            let selector = self.world.resource_selector(@"Prover");
-            assert(world.dispatcher.is_owner(selector, caller), 'ony owner of model');
-
-            let mut prover: Prover = world.read_model(get_contract_address());
-
-            assert(prover.address.is_zero(), 'Prover already initialized');
-
-            prover.address = Prover_address;
-            world.write_model(@prover);
         }
     }
 }

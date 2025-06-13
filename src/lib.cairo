@@ -5,7 +5,6 @@ pub mod systems {
 pub mod models;
 pub mod utils;
 pub mod constant;
-pub mod interface;
 
 pub mod tests {
     mod test_world;
