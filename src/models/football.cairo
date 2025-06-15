@@ -64,7 +64,6 @@ pub struct Velocity {
 pub struct Team {
     #[key]
     pub team_id: u32,
-    #[key]
     pub player: ContractAddress,
     pub players_id: u32,
     pub match_id: u32,
@@ -103,7 +102,7 @@ pub struct Match {
 #[dojo::model]
 pub struct SelectedSkill {
     #[key]
-    pub player_id: u32,
+    pub index: u32,
     pub skills: felt252,
 }
 

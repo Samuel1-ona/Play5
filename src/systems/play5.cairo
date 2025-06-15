@@ -6,6 +6,7 @@ use starknet::{ContractAddress};
 pub trait IGamesystem<TState> {
   fn initialize(ref self: TState, prover_address: ContractAddress, vrf_address: ContractAddress);
     fn start_match(ref self: TState, match_id: u32);
+    fn create_team(ref self: TState, team_id: u32, salt_nonce: u64) -> u32;
    
 }
 
@@ -41,7 +42,7 @@ pub mod Gamesystem {
     };
     use play5::utils::random::{
         get_random_football_skills_from_selected_skills, get_random_index_football_fouls,
-        get_random_index_football_skills, map_random_fouls_from_action, check_skills_is_selected
+        get_random_index_football_skills, map_random_fouls_from_action, check_skills_is_selected, get_random_hash
     };
     use play5::utils::signature::{
         compute_message_hash_for_prover_skills, compute_message_hash_for_prover_fouls
@@ -51,7 +52,7 @@ pub mod Gamesystem {
     };
     use play5::models::signature::{Prover, UsedSignature};
 
-    use super::{IGamesystem, IAccountABI};
+    use super::{IGamesystem, IAccountABIDispatcher, IAccountABIDispatcherTrait};
 
     #[storage]
     pub struct Storage {
@@ -77,6 +78,18 @@ pub mod Gamesystem {
         timestamp: u64
     }
 
+    #[derive(Copy, Drop, Serde)]
+    #[dojo::event]
+    struct TeamCreated {
+        #[key]
+        team_id: u32,
+        player: ContractAddress,
+        players_id: u32,
+        timestamp: u64
+    }
+
+
+ 
     #[abi(embed_v0)]
     impl GamesystemImpl of IGamesystem<ContractState> {
       // Needs to be worked on 
@@ -116,7 +129,7 @@ pub mod Gamesystem {
         let mut team1_data: Team = world.read_model(match_data.team1_id);
         let mut team2_data: Team = world.read_model(match_data.team2_id);
 
-       // Todo: check if the team was created by the caller
+      
 
         // verify the team has enough players
         assert(team1_data.players_id == 5, 'Team 1 needs 5 players');
@@ -150,6 +163,56 @@ pub mod Gamesystem {
             team2_id: match_data.team2_id,
             timestamp: starknet::get_block_timestamp()
         });
+    }
+
+
+    fn create_team(ref self: ContractState, team_id: u32, salt_nonce: u64) -> u32 {
+        let mut world = InternalImpl::world_default(@self);
+        let caller = get_caller_address();
+        // if the team is created by the caller 
+        let mut team_data: Team = world.read_model(team_id);
+        assert(team_data.player == caller, 'Caller is not the team');
+
+
+        // Create new team with 5 players requirement
+        let mut team = Team {
+            team_id: team_id,
+            player: caller,
+            players_id: 5, 
+            match_id: 0,   
+            score: 0,      
+            tx_hash: get_tx_info().transaction_hash
+        };
+
+        // Write the team to world state
+        world.write_model(@team);
+
+        let new_team_id = team.team_id + 1;
+
+        let mut i = 0;
+        loop {
+            if i == 5 {
+                break;
+            }
+            let player = Players {
+                player_id: new_team_id + i,
+                player: caller,
+                player_skills: ArrayTrait::new(),
+                team_id: team_id,
+                tx_hash: get_tx_info().transaction_hash
+            };
+            world.write_model(@player);
+            i += 1;
+        };
+        // Emit team created event
+        world.emit_event(@TeamCreated {
+            team_id,
+            player: caller,
+            players_id: 5,
+            timestamp: starknet::get_block_timestamp()
+        });
+
+        return new_team_id;
     }
 }
 }

@@ -72,7 +72,7 @@ pub fn get_random_football_skills_from_selected_skills(
             j += 1;
         };
 
-        if count <= 8 {
+        if count <= 11 {
             can_recieve_skills.append(skill);
         }
         i += 1;
@@ -104,13 +104,13 @@ pub fn map_random_fouls_from_action(action: FoulsActions) -> CommonFouls{
 
 
 pub fn check_skills_is_selected(
-    selected_skills: Span<SelectedSkill>, skill: felt252, player_id: u32,
+    selected_skills: Span<SelectedSkill>, skill: felt252, index: u32,
 ) -> bool {
     let mut found: bool = false;
     let mut i: u32 = 0;
     while i < selected_skills.len() {
         let selected_skill = *selected_skills.at(i);
-        if selected_skill.player_id == player_id && selected_skill.skills == skill {
+        if selected_skill.index == index && selected_skill.skills == skill {
             found = true;
         }
         i += 1;
